@@ -33,14 +33,13 @@ def parse_args():
 
 def main(args):
     
-
+    ns = [100, 200, 500]
     for s in args.seeds:
         y_method='poly'
-
-        ns = [100, 200, 500]
+        
         p=int(max(ns)/2)
         sparsity = 0.25
-        cor=0.6
+        cor=0.3
         cor_meth='toep'
         snr=2
 
@@ -160,11 +159,11 @@ def main(args):
             f_res1["n"] = ns[j]
 
             # adapt p dynamically depending on ns[j]
-            p_j = true_importance[i, j].shape[0]
+            p_j = int(ns[j]/2)
 
             for k in range(p_j):
                 f_res1[f"tr_V{k}"]  = true_importance[j, k]
-                f_res1[f"pval{k}"]  = estim_imp[i, j, k]
+                f_res1[f"imp{k}"]  = estim_imp[i, j, k]
 
             f_res1['tr_time'] = executation_time[i, j]
 

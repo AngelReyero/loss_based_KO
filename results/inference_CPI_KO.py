@@ -478,7 +478,7 @@ plt.subplots_adjust(hspace=0.4, wspace=0.3)
 fig.text(0.5, -0.05, 'Number of samples', ha='center', fontsize=20)
 
 
-plt.savefig(f"figures/inference_poly_p{p}_cor{cor}_auc.pdf", bbox_inches="tight")
+plt.savefig(f"figures/CPI_KO_inference_poly_p{p}_cor{cor}_auc.pdf", bbox_inches="tight")
 
 
 

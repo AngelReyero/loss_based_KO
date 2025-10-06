@@ -129,13 +129,11 @@ dashes = {
 
 
 
-# LINEAR FIGURES
-p =100
+p =50
 cor=0.6
 alpha = 0.05
 
-y_method = 'hidimstats'
-parallel = True
+y_method = 'poly'
 
 
 csv_files = glob.glob(f"csv/n_p_fixed_{y_method}_Var_cor{cor}*.csv")
