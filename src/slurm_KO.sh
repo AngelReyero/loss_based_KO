@@ -8,7 +8,7 @@
 #SBATCH --cpus-per-task=5
 #SBATCH --mem=8G
 #SBATCH --partition="normal,parietal"
-#SBATCH --array=[1-30]%5
+#SBATCH --array=[100-110]%5
 
 
 # Command to run

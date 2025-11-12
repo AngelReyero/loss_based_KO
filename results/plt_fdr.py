@@ -51,13 +51,13 @@ dashes = {
 
 
 
-cor=0.6
+cor=0.3
 
-y_method = 'poly'
-fdr=0.1
+y_method = 'hidimstats'
+fdr=0.2
 ns = [100, 200, 500]
 p=int(max(ns)/2)
-csv_files = glob.glob(f"csv/KO/{y_method}_cor{cor}*.csv")
+csv_files = glob.glob(f"csv/KO/{y_method}_cor{cor}_seed10*.csv")
 df = pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True)
 
 

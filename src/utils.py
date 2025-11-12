@@ -329,6 +329,160 @@ def GenToysDataset(n=1000, d=10, cor='toep', y_method="nonlin", k=2, mu=None, rh
 
 
 
+def GenSynthDataset(
+    n=300,
+    d=50,
+    setting="adjacent",
+    sparsity=0.25,
+    cor="toep",
+    rho=0.6,
+    seed=0
+):
+    """
+    Parameters
+    ----------
+    n : int
+        Number of samples.
+    d : int
+        Number of predictors.
+    setting : str
+        One of:
+            - 'adjacent'
+            - 'spaced'
+            - 'sinusoidal'
+            - 'hidim'
+            - 'nongauss'
+            - 'poly'
+
+    sparsity : float
+        Proportion of nonzero signal features (used in sparse settings).
+
+    cor : str
+        Correlation structure for X:
+            - 'iso'   : independent features
+            - 'toep'  : Toeplitz correlation with parameter rho
+            - 'ar1'   : AR(1) correlation
+            - 'block' : blockwise correlation
+
+    rho : float
+        Correlation parameter for Toeplitz, AR(1), or block structures.
+
+    seed : int
+        Random seed.
+
+    Returns
+    -------
+    X : array, shape (n, d)
+        Feature matrix.
+    y : array, shape (n,)
+        Response vector.
+    true_imp : array, shape (d,)
+        Indicator of truly relevant predictors.
+    """
+    rng = np.random.default_rng(seed)
+    true_imp = np.zeros(d)
+
+    # ------------------------------------------------------------
+    # 1. Build covariance matrix
+    # ------------------------------------------------------------
+    def make_cov(d, cor, rho):
+        if cor == "iso":
+            return np.eye(d)
+
+        elif cor == "toep":
+            # Toeplitz: rho^{|i-j|}
+            idx = np.arange(d)
+            return rho ** np.abs(idx[:, None] - idx[None, :])
+
+        elif cor == "ar1":
+            idx = np.arange(d)
+            return rho ** np.abs(idx[:, None] - idx[None, :])
+
+        elif cor == "block":
+            b = max(2, d // 5)
+            M = np.eye(d)
+            for start in range(0, d, b):
+                end = min(start+b, d)
+                M[start:end, start:end] = rho
+                np.fill_diagonal(M[start:end, start:end], 1.0)
+            return M
+
+        else:
+            raise ValueError("Invalid cor setting.")
+
+    cov = make_cov(d, cor, rho)
+
+    # ------------------------------------------------------------
+    # 2. Generate X
+    # ------------------------------------------------------------
+    if setting == "nongauss":
+        # heavy-tailed → correlating through Cholesky
+        Xraw = rng.standard_t(df=3, size=(n, d))
+        L = np.linalg.cholesky(cov)
+        X = Xraw @ L.T
+    else:
+        X = rng.multivariate_normal(np.zeros(d), cov, size=n)
+
+    # ------------------------------------------------------------
+    # 3. Generate y depending on setting
+    # ------------------------------------------------------------
+
+    # ---------- Adjacent Support --------------------------------
+    if setting == "adjacent":
+        k = max(1, int(sparsity * d))
+        true_imp[:k] = 1
+        beta = np.linspace(1, 2, k)
+        y = X[:, :k] @ beta + rng.normal(scale=1, size=n)
+
+    # ---------- Spaced Support ----------------------------------
+    elif setting == "spaced":
+        stride = max(1, int(1 / sparsity))
+        idx = np.arange(0, d, stride)[:max(1, int(sparsity * d))]
+        true_imp[idx] = 1
+        beta = rng.uniform(1, 2, size=len(idx))
+        y = X[:, idx] @ beta + rng.normal(scale=1, size=n)
+
+    # ---------- Sinusoidal Setting -------------------------------
+    elif setting == "sinusoidal":
+        # overrides X distribution
+        X = rng.uniform(0, 2*np.pi, size=(n, d))
+        m = min(d, 10)
+        true_imp[:m] = 1
+        y = np.sum(np.sin(X[:, :m]), axis=1) + rng.normal(scale=0.2, size=n)
+
+    # ---------- High-Dimensional Sparse --------------------------
+    elif setting == "hidim":
+        k = max(1, int(sparsity * d))
+        idx = rng.choice(d, k, replace=False)
+        true_imp[idx] = 1
+        beta = rng.normal(scale=1, size=k)
+        y = X[:, idx] @ beta + rng.normal(scale=1, size=n)
+
+    # ---------- Non-Gaussian Heavy-Tailed X ----------------------
+    elif setting == "nongauss":
+        k = max(1, int(sparsity * d))
+        idx = np.arange(k)
+        true_imp[idx] = 1
+        beta = rng.normal(scale=1, size=k)
+        y = X[:, idx] @ beta + rng.normal(scale=1, size=n)
+
+    # ---------- Polynomial Interactions --------------------------
+    elif setting == "poly":
+        k = max(1, int(sparsity * d))
+        idx = rng.choice(d, k, replace=False)
+        true_imp[idx] = 1
+
+        poly = PolynomialFeatures(degree=3, include_bias=False)
+        XP = poly.fit_transform(X[:, idx])
+        coef = rng.choice([-1, 1], size=XP.shape[1])
+        y = XP @ coef + rng.normal(scale=1, size=n)
+
+    else:
+        raise ValueError("Unknown setting.")
+
+    return X, y, true_imp
+
+
 def _estimate_distribution(X, shrink=True, cov_estimator='ledoit_wolf', n_jobs=1):
     """
     Adapted from hidimstat: https://github.com/ja-che/hidimstat

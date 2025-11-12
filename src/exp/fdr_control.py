@@ -13,7 +13,7 @@ from sklearn.base import clone
 from hidimstat import D0CRT
 from pyhrt.hrt import hrt
 from hidimstat.knockoffs import model_x_knockoff
-
+from sklearn.linear_model import RidgeCV
 from sklearn.model_selection import KFold
 
 
@@ -35,7 +35,7 @@ def main(args):
     
     ns = [100, 200, 500]
     for s in args.seeds:
-        y_method='poly'
+        y_method='hidimstats'
         
         p=int(max(ns)/2)
         sparsity = 0.25
@@ -85,8 +85,8 @@ def main(args):
             start_time = time.time()
             cpi_knockoffs= CPI_KO(
                 estimator=model,
-                imputation_model=LassoCV(alphas=np.logspace(-3, 3, 10), cv=5, random_state=s),
-                imputation_model_y=LassoCV(alphas=np.logspace(-3, 3, 10), cv=5, random_state=s),
+                imputation_model=RidgeCV(alphas=np.logspace(-3, 3, 10), cv=5),
+                imputation_model_y=RidgeCV(alphas=np.logspace(-3, 3, 10), cv=5),
                 random_state=s,
                 n_jobs=n_jobs)
             cpi_knockoffs.fit(X, y)
