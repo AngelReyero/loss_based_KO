@@ -9,7 +9,7 @@
 #SBATCH --array=0-599%10  # 6 settings × 5 models × 20 seeds = 600 jobs, 5 concurrent
 
 # Define settings and models
-settings=("adjacent" "spaced" "sinusoidal" "highdim" "nongaussian" "poly")
+settings=("adjacent" "spaced" "sinusoidal" "hidim" "nongauss" "poly")
 models=("lasso" "RF" "NN" "GB" "SL")
 
 # Compute indices
@@ -23,7 +23,7 @@ seed_idx=$((SLURM_ARRAY_TASK_ID % n_seeds))
 
 setting=${settings[$setting_idx]}
 model=${models[$model_idx]}
-seed=$((seed_idx + 1))
+seed=$((seed_idx + 41))
 
 echo "Running setting=${setting}, model=${model}, seed=${seed}"
 

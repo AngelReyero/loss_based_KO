@@ -26,7 +26,7 @@ from sklearn.ensemble import StackingRegressor
 def parse_args():
     parser = argparse.ArgumentParser(description="Comparison of CPI_KO vs LOCO, dCRT, HRT, CPI")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
-    parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','highdim','nongaussian','poly'], required=True)
+    parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin'], required=True)
     parser.add_argument("--model", type=str, choices=['lasso','RF','NN','GB','SL'], required=True)
     return parser.parse_args()
 
@@ -65,7 +65,7 @@ def main(args):
     rng = np.random.RandomState(seed)
 
     # Determine number of features depending on setting
-    if setting == 'highdim':
+    if setting == 'hidim':
         p = 200
     else:
         p = 50
