@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 import argparse
 from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.linear_model import LassoCV, LinearRegression
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import mean_squared_error, r2_score
@@ -18,6 +17,7 @@ from loco import LOCO
 from cpi_KO import CPI_KO
 from sobol_CPI import Sobol_CPI
 from sklearn.ensemble import StackingRegressor
+from sklearn.linear_model import LassoCV, ElasticNetCV, RidgeCV, LinearRegression
 
 
 # ------------------------------
@@ -28,6 +28,8 @@ def parse_args():
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin', "interact_pairwise", "interact_highorder" ,"interact_latent", "interact_sin", "interact_oscillatory"], required=True)
     parser.add_argument("--model", type=str, choices=['lasso','RF','NN','GB','SL'], required=True)
+    parser.add_argument("--imputer", type=str, choices=['lasso','elasticnet','ridge', 'RF','NN','GB','SL'], default=None)
+    parser.add_argument("--n", type=int, default=300)
     return parser.parse_args()
 
 # ------------------------------
@@ -52,16 +54,82 @@ def get_base_model(model_name, random_state, n_jobs=1):
 
     else:
         raise ValueError(f"Unknown model: {model_name}")
+    
+
+def get_imputation_model(model_name, random_state, n_jobs=1):
+    if model_name == 'lasso':
+        return LassoCV(
+            alphas=np.logspace(-3, 3, 10),
+            cv=5,
+            random_state=random_state
+        )
+
+    elif model_name == 'elasticnet':
+        return ElasticNetCV(
+            alphas=np.logspace(-3, 3, 10),
+            l1_ratio=[0.1, 0.5, 0.9, 1.0],   
+            cv=5,
+            random_state=random_state
+        )
+
+    elif model_name == 'ridge':
+        return RidgeCV(
+            alphas=np.logspace(-3, 3, 10),
+            cv=5
+        )
+
+    elif model_name == 'RF':
+        return RandomForestRegressor(
+            n_estimators=200,
+            max_depth=None,
+            random_state=random_state,
+            n_jobs=n_jobs
+        )
+
+    elif model_name == 'NN':
+        return MLPRegressor(
+            hidden_layer_sizes=(50, 50),
+            max_iter=1000,
+            random_state=random_state
+        )
+
+    elif model_name == 'GB':
+        return GradientBoostingRegressor(
+            n_estimators=200,
+            max_depth=3,
+            random_state=random_state
+        )
+
+    elif model_name == 'SL':
+        estimators = [
+            ('lasso', LassoCV(alphas=np.logspace(-3, 3, 10), cv=3, random_state=random_state)),
+            ('enet', ElasticNetCV(alphas=np.logspace(-3, 3, 10),
+                                  l1_ratio=[0.1, 0.5, 0.9], cv=3,
+                                  random_state=random_state)),
+            ('ridge', RidgeCV(alphas=np.logspace(-3, 3, 10), cv=3)),
+            ('gb', GradientBoostingRegressor(max_depth=3, random_state=random_state)),
+        ]
+
+        return StackingRegressor(
+            estimators=estimators,
+            final_estimator=LinearRegression(),
+            n_jobs=n_jobs
+        )
+
+    else:
+        raise ValueError(f"Unknown model: {model_name}")
+
 
 # ------------------------------
 # Main function
 # ------------------------------
 def main(args):
-    n = 300
+    n = args.n
     n_r2 = 1000
     seed = args.seed
     setting = args.setting
     base_model_name = args.model
+    imputer_model_name = args.imputer
     rng = np.random.RandomState(seed)
 
     # Determine number of features depending on setting
@@ -88,7 +156,10 @@ def main(args):
 
     # Base model
     base_model = get_base_model(base_model_name, seed)
-
+    if imputer_model_name == None: 
+        imputer = get_imputation_model("lasso", seed)
+    else:
+        imputer = get_imputation_model(imputer_model_name, seed)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=seed)
     # ------------------------------
     # Method 0: LOCO-Williamson
@@ -181,10 +252,12 @@ def main(args):
     start_time = time.time()
     model_ko = clone(base_model)
     model_ko.fit(X, y)
+    nu_j = clone(imputer)
+    rho_j = clone(imputer)
     cpi_knockoffs = CPI_KO(
         estimator=model_ko,
-        imputation_model=LassoCV(alphas=np.logspace(-3,3,10), cv=5, random_state=seed),
-        imputation_model_y=LassoCV(alphas=np.logspace(-3,3,10), cv=5, random_state=seed),
+        imputation_model=nu_j,
+        imputation_model_y=rho_j,
         random_state=seed,
         n_jobs=1
     )
@@ -244,9 +317,22 @@ def main(args):
             row[f"pval{j}"] = p_val[i, j]
         f_res = pd.concat([f_res, pd.DataFrame([row])], ignore_index=True)
 
-    csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), f"../../results/res_csv/p_values_{setting}_{base_model_name}_seed{seed}.csv"))
+    n_tag = f"_n{n}" if n != 300 else ""
 
-    #csv_path.parent.mkdir(parents=True, exist_ok=True)
+    # base name
+    base = f"p_values_{setting}_{base_model_name}{n_tag}"
+
+    # add imputer if needed
+    if imputer_model_name is not None:
+        base += f"_imp{imputer_model_name}"
+
+    # add seed
+    base += f"_seed{seed}.csv"
+
+    # full path
+    csv_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), f"../../results/res_csv/{base}")
+    )
     f_res.to_csv(csv_path, index=False)
     print(f"Saved results to {csv_path}")
 

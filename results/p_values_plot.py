@@ -120,11 +120,11 @@ dashes = {
 
 alpha = 0.05
 
-settings = ['adjacent', 'hidim', 'nongauss', 'poly', 'sin', 'sinusoidal', 'spaced', 'interact_pairwise', 'interact_highorder', 'interact_latent']
+settings = ['adjacent', 'hidim', 'nongauss', 'poly', 'sin', 'sinusoidal', 'spaced', 'interact_pairwise', 'interact_highorder', 'interact_latent', 'interact_oscillatory', 'interact_sin']
 models = ['GB', 'lasso', 'NN', 'RF', 'SL']
 for model in models:
     for setting in settings:
-        csv_files = glob.glob(f"res_csv/p_values_{setting}_{model}*.csv")
+        csv_files = glob.glob(f"res_csv/p_values_{setting}_{model}_seed*.csv")
         df = pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True)
 
 
@@ -187,53 +187,82 @@ for model in models:
 
         sns.set(style="whitegrid", font_scale=1.3)
 
-        fig, axes = plt.subplots(1, 4, figsize=(22, 6))
+        fig, axes = plt.subplots(1, 4, figsize=(24, 10))
         metrics = ['tr_time', 'power', 'type_I', 'AUC']
         labels = ['Computation Time (s)', 'Power', 'Type-I Error', 'AUC']
 
-        # We keep the order of methods as they appear in the data (to preserve consistency)
         method_order = list(df['method'].unique())
 
         for ax, metric, label in zip(axes, metrics, labels):
             sns.boxplot(
                 data=df,
-                x='method',
-                y=metric,
+                y='method',         # horizontal orientation
+                x=metric,
                 order=method_order,
                 palette=palette,
                 ax=ax,
                 linewidth=1.3,
-                fliersize=2
+                fliersize=2,
+                orient='h'
             )
-            ax.set_xlabel("")
-            ax.set_ylabel(label, fontsize=16)
-            ax.tick_params(axis='x', rotation=90)
+
+        # ----------------------------------------------------
+        # Y-axis (method names) ONLY on the first subplot
+        # ----------------------------------------------------
+        for i, (ax, metric, label) in enumerate(zip(axes, metrics, labels)):
+            
+            if i == 0:
+                ax.set_ylabel("Methods", fontsize=16)
+                ax.tick_params(axis='y', labelsize=12)
+            else:
+                ax.set_ylabel("")
+                ax.set_yticklabels([])   # remove method names
+                ax.tick_params(axis='y', length=0)  # remove ticks
+
+            # Only the first subplot has the xlabel?
+            # -> NO, you want all xlabels, so keep them.
+            ax.set_xlabel(label, fontsize=16)
+
             if metric == 'tr_time':
-                ax.set_yscale('log')
+                ax.set_xscale('log')
 
-        # Single legend (manual, based on your palette)
-        handles = []
-        for method, color in palette.items():
-            h = plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color, markersize=10, label=method)
-            handles.append(h)
+        # ----------------------------------------------------
+        # Legend BELOW the full figure (centered)
+        # ----------------------------------------------------
 
+        handles = [
+            plt.Line2D([0], [0], marker='o', color='w',
+                    markerfacecolor=color, markersize=10, label=method)
+            for method, color in palette.items()
+        ]
+
+    
+
+        hrt_r2_mean = df.loc[df['method'] == 'HRT', 'r2_test'].mean()
+        semi_ko_r2_mean = df.loc[df['method'] == 'Semi_KO_Wilcox', 'r2_test'].mean()  
+
+        # Reserve space at TOP and BOTTOM before adding title + legend
+        plt.subplots_adjust(
+            top=0.88,      # space for title
+            bottom=0.40,   # space for legend
+            wspace=0.25
+        )
+
+        # ---- SUPTITLE (safe placement) ----
+        fig.suptitle(
+            f"Inference Results (mean HRT={hrt_r2_mean:.3f}, mean Semi_KO={semi_ko_r2_mean:.3f})",
+            fontsize=18
+        )
+
+        # ---- LEGEND (placed below plots) ----
         fig.legend(
             handles=handles,
-            loc='upper center',           # use upper/lower center to anchor relative to bbox
-            bbox_to_anchor=(0.5, -0.15), # negative y moves it below the figure
+            loc='lower center',
+            bbox_to_anchor=(0.5, 0.05),  # inside the space we reserved with bottom=0.20
             ncol=4,
             title="Methods",
             fontsize=12,
             title_fontsize=13
         )
-
-        plt.tight_layout()
-        plt.subplots_adjust(top=0.82, bottom=0.25, wspace=0.3)
-
-
-        hrt_r2_mean = df.loc[df['method'] == 'HRT', 'r2_test'].mean()
-        semi_ko_r2_mean = df.loc[df['method'] == 'Semi_KO_Wilcox', 'r2_test'].mean()  
-
-        fig.suptitle(f"Inference Results (mean HRT={hrt_r2_mean:.3f}, mean Semi_KO={semi_ko_r2_mean:.3f})", fontsize=18)
 
         plt.savefig(f"new_figures/p_values_{setting}_{model}.pdf", bbox_inches="tight")
