@@ -120,7 +120,7 @@ dashes = {
 
 alpha = 0.05
 
-settings = ['adjacent', 'hidim', 'nongauss', 'poly', 'sin', 'sinusoidal', 'spaced']
+settings = ['adjacent', 'hidim', 'nongauss', 'poly', 'sin', 'sinusoidal', 'spaced', 'interact_pairwise', 'interact_highorder', 'interact_latent']
 models = ['GB', 'lasso', 'NN', 'RF', 'SL']
 for model in models:
     for setting in settings:

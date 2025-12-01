@@ -26,7 +26,7 @@ from sklearn.ensemble import StackingRegressor
 def parse_args():
     parser = argparse.ArgumentParser(description="Comparison of CPI_KO vs LOCO, dCRT, HRT, CPI")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
-    parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin'], required=True)
+    parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin', "interact_pairwise", "interact_highorder" ,"interact_latent", "interact_sin", "interact_oscillatory"], required=True)
     parser.add_argument("--model", type=str, choices=['lasso','RF','NN','GB','SL'], required=True)
     return parser.parse_args()
 

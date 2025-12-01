@@ -456,6 +456,14 @@ def GenSynthDataset(
         m = min(d, 10)
         true_imp[:m] = 1
         y = np.sum(np.sin(X[:, :m]), axis=1) + rng.normal(scale=0.2, size=n)
+        # ---------- Interact Sinusoidal Setting -------------------------------
+    elif setting == "interact_sin":
+        # overrides X distribution
+        X = rng.uniform(-np.pi, np.pi, size=(n, d))
+        k = max(1, int(sparsity * d))
+        idx = rng.choice(d, k, replace=False)
+        true_imp[idx] = 1
+        y = np.sin(np.sum(X[:, idx], axis=1)) + rng.normal(scale=0.2, size=n)
     # ---------- High-Dimensional Sparse --------------------------
     elif setting == "hidim":
         k = max(1, int(sparsity * d))
@@ -482,6 +490,68 @@ def GenSynthDataset(
         XP = poly.fit_transform(X[:, idx])
         coef = rng.choice([-1, 1], size=XP.shape[1])
         y = XP @ coef + rng.normal(scale=1, size=n)
+        # ---------- Setting 1: Pure Pairwise Interactions ----------
+    elif setting == "interact_pairwise":
+        k = max(2, int(sparsity * d))
+        idx = rng.choice(d, k, replace=False)
+        true_imp[idx] = 1
+
+        # choose m interaction pairs
+        pairs = []
+        for a in range(k):
+            for b in range(a+1, k):
+                pairs.append((idx[a], idx[b]))
+        m = min(len(pairs), 20)
+        pairs = pairs[:m]
+
+        y = np.zeros(n)
+        for (i, j) in pairs:
+            coef = rng.normal(scale=1)
+            y += coef * X[:, i] * X[:, j]
+
+        y += rng.normal(scale=1, size=n)
+    # ---------- Setting 2: High-Order Interaction (Product) ----------
+    elif setting == "interact_highorder":
+        k = max(3, int(sparsity * d))     # choose at least 3 active variables
+        idx = rng.choice(d, k, replace=False)
+        true_imp[idx] = 1
+
+        # high-order product (use only first h terms for stability)
+        h = min(k, 6)
+        subset = idx[:h]
+
+        y = np.prod(X[:, subset], axis=1) + rng.normal(scale=1, size=n)
+        # ---------- Setting 3: Latent Interaction Model ----------
+    elif setting == "interact_latent":
+        # latent factor
+        Z = rng.normal(size=n)
+
+        # X generated from latent + noise
+        X = Z[:, None] * rng.normal(scale=1, size=(n, d)) \
+            + rng.normal(scale=0.2, size=(n, d))
+
+        # pick one variable to interact with latent Z
+        j = rng.integers(0, d)
+        true_imp[j] = 1
+
+        # y depends only on interaction Z * X_j
+        coef = rng.normal()
+        y = coef * (Z * X[:, j]) + rng.normal(scale=1, size=n)
+
+    # ---------- Setting 5: Oscillatory High-Order Interaction ----------
+    elif setting == "interact_oscillatory":
+        k = max(3, int(sparsity * d))
+        idx = rng.choice(d, k, replace=False)
+        true_imp[idx] = 1
+
+        h = min(k, 6)
+        subset = idx[:h]
+
+        prod_component = np.prod(X[:, subset], axis=1)
+        quad_component = np.sum(X[:, subset]**2, axis=1)
+
+        y = np.sin(prod_component) + 0.5 * np.cos(quad_component) \
+            + rng.normal(scale=1, size=n)
 
     else:
         raise ValueError("Unknown setting.")

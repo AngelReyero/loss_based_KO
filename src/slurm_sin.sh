@@ -6,10 +6,10 @@
 #SBATCH --cpus-per-task=5
 #SBATCH --mem=8G
 #SBATCH --partition="normal,parietal"
-#SBATCH --array=0-119%10  # 6 settings × 1 models × 20 seeds = 600 jobs, 5 concurrent
+#SBATCH --array=0-199%10  # 2 settings × 5 models × 20 seeds = 300 jobs, 5 concurrent
 
 # Define settings and models
-settings=("sin")
+settings=("interact_oscillatory" "interact_sin")
 models=("lasso" "RF" "NN" "GB" "SL")
 
 # Compute indices
