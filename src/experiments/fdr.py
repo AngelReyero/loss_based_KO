@@ -170,11 +170,11 @@ def main(args):
         y,
         estimator=LassoCV(
             n_jobs=1,
-            cv=KFold(n_splits=5, shuffle=True, random_state=0),
-            random_state=1,
+            cv=KFold(n_splits=5, shuffle=True, random_state=seed),
+            random_state=seed,
         ),
         n_bootstraps=1,
-        random_state=2,
+        random_state=seed,
     )
     execution_time[0] = time.time() - start_time + tr_KO_time + imp_time_CPI_KO
     estim_imp[0, :p]= test_scores.reshape((p,))
