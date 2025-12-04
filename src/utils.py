@@ -459,9 +459,10 @@ def GenSynthDataset(
     elif setting == "cos":
         # overrides X distribution
         X = rng.uniform(-np.pi, np.pi, size=(n, d))
-        m = min(d, 10)
-        true_imp[:m] = 1
-        y = np.sum(np.cos(X[:, :m]), axis=1) + rng.normal(scale=0.2, size=n)
+        k = max(1, int(sparsity * d))
+        idx = rng.choice(d, k, replace=False)
+        true_imp[idx] = 1
+        y = np.sum(np.cos(X[:, idx]), axis=1) + rng.normal(scale=0.2, size=n)
 
         # ---------- Interact Sinusoidal Setting -------------------------------
     elif setting == "interact_sin":

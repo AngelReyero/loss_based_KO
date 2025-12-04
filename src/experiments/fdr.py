@@ -31,7 +31,7 @@ from sklearn.model_selection import KFold
 def parse_args():
     parser = argparse.ArgumentParser(description="Comparison of CPI_KO vs dCRT, HRT")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
-    parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin'], required=True)
+    parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin', 'cos', 'interact_sin', 'interact_pairwise', 'interact_highorder', 'interact_oscillatory'], required=True)
     parser.add_argument("--model", type=str, choices=['lasso','RF','NN','GB','SL'], required=True)
     return parser.parse_args()
 
