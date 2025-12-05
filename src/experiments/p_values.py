@@ -26,7 +26,7 @@ from sklearn.linear_model import LassoCV, ElasticNetCV, RidgeCV, LinearRegressio
 def parse_args():
     parser = argparse.ArgumentParser(description="Comparison of CPI_KO vs LOCO, dCRT, HRT, CPI")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
-    parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin', "interact_pairwise", "interact_highorder" ,"interact_latent", "interact_sin", "interact_oscillatory"], required=True)
+    parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin', 'cos', "interact_pairwise", "interact_highorder" ,"interact_latent", "interact_sin", "interact_oscillatory"], required=True)
     parser.add_argument("--model", type=str, choices=['lasso','RF','NN','GB','SL'], required=True)
     parser.add_argument("--imputer", type=str, choices=['lasso','elasticnet','ridge', 'RF','NN','GB','SL'], default=None)
     parser.add_argument("--n", type=int, default=300)
