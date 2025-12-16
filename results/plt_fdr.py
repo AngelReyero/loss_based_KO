@@ -79,7 +79,7 @@ dashes = {
 }
 
 settings=["cos", "interact_sin", "interact_pairwise", "interact_highorder", "interact_oscillatory"]
-#settings=["adjacent", "spaced", "sinusoidal", "hidim", "nongauss", "poly"]
+settings=["adjacent", "spaced", "sinusoidal", "hidim", "nongauss", "poly"]
 models=["lasso", "RF", "NN", "GB", "SL"]
 
 fdr=0.2
@@ -200,6 +200,7 @@ for setting in settings:
         ax[3].set_xlabel("AUC", fontsize=18)
         ax[3].set_yticklabels([])
         ax[3].tick_params(axis='x', labelsize=12)
+        ax[3].axvline(x=0.5, color='red', linestyle='--', linewidth=2)
 
         # ---- Manual legend at bottom ----
         legend_elements = [

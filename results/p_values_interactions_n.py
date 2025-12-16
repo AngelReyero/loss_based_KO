@@ -222,9 +222,12 @@ for setting in settings:
                     ax.set_yticklabels([])   # remove method names
                     ax.tick_params(axis='y', length=0)  # remove ticks
 
-                # Only the first subplot has the xlabel?
-                # -> NO, you want all xlabels, so keep them.
+                if i == 2:
+                    ax.axvline(x=0.05, color='red', linestyle='--', linewidth=2)
                 ax.set_xlabel(label, fontsize=16)
+
+                if i == 3:
+                    ax.axvline(x=0.5, color='red', linestyle='--', linewidth=2)
 
                 if metric == 'tr_time':
                     ax.set_xscale('log')

@@ -223,6 +223,9 @@ for model in models:
                 ax.axvline(x=0.05, color='red', linestyle='--', linewidth=2)
             ax.set_xlabel(label, fontsize=16)
 
+            if i == 3:
+                ax.axvline(x=0.5, color='red', linestyle='--', linewidth=2)
+
             if metric == 'tr_time':
                 ax.set_xscale('log')
 
