@@ -567,6 +567,165 @@ def GenSynthDataset(
     return X, y, true_imp
 
 
+
+
+def GenNonLinDataset(
+    n=300,
+    d=50,
+    setting="adjacent",
+    sparsity=0.25,
+    cor="toep",
+    rho=0.6,
+    seed=0
+):
+    """
+    Parameters
+    ----------
+    n : int
+        Number of samples.
+
+    sparsity : float
+        Proportion of nonzero signal features (used in sparse settings).
+
+    cor : str
+        Correlation structure for X:
+            - 'iso'   : independent features
+            - 'toep'  : Toeplitz correlation with parameter rho
+            - 'ar1'   : AR(1) correlation
+            - 'block' : blockwise correlation
+
+    rho : float
+        Correlation parameter for Toeplitz, AR(1), or block structures.
+
+    seed : int
+        Random seed.
+
+    Returns
+    -------
+    X : array, shape (n, d)
+        Feature matrix.
+    y : array, shape (n,)
+        Response vector.
+    true_imp : array, shape (d,)
+        Indicator of truly relevant predictors.
+    """
+    rng = np.random.default_rng(seed)
+    true_imp = np.zeros(d)
+
+    # ------------------------------------------------------------
+    # 1. Build covariance matrix
+    # ------------------------------------------------------------
+    def make_cov(d, cor, rho):
+        if cor == "iso":
+            return np.eye(d)
+
+        elif cor == "toep":
+            # Toeplitz: rho^{|i-j|}
+            idx = np.arange(d)
+            return rho ** np.abs(idx[:, None] - idx[None, :])
+
+        elif cor == "ar1":
+            idx = np.arange(d)
+            return rho ** np.abs(idx[:, None] - idx[None, :])
+
+        elif cor == "block":
+            b = max(2, d // 5)
+            M = np.eye(d)
+            for start in range(0, d, b):
+                end = min(start+b, d)
+                M[start:end, start:end] = rho
+                np.fill_diagonal(M[start:end, start:end], 1.0)
+            return M
+
+        else:
+            raise ValueError("Invalid cor setting.")
+
+    cov = make_cov(d, cor, rho)
+
+    # ------------------------------------------------------------
+    # 2. Generate X
+    # ------------------------------------------------------------
+    if setting == "nongauss":
+        # heavy-tailed → correlating through Cholesky
+        Xraw = rng.standard_t(df=3, size=(n, d))
+        L = np.linalg.cholesky(cov)
+        X = Xraw @ L.T
+    else:
+        X = rng.multivariate_normal(np.zeros(d), cov, size=n)
+
+    # ------------------------------------------------------------
+    # 3. Generate y depending on setting
+    # ------------------------------------------------------------
+
+    if setting == "single_index_threshold":
+        k = max(1, int(sparsity * d))
+        idx = rng.choice(d, k, replace=False)
+        true_imp[idx] = 1
+
+        s = X[:, idx] @ rng.normal(size=k)
+        y = (s > 0).astype(float) + 0.3 * rng.normal(size=n)
+
+    elif setting == "mean_flip":
+        j = rng.integers(0, d)
+        true_imp[j] = 1
+
+        y = rng.normal(size=n)
+
+        X[:, j] += np.sign(y) * 1.5
+    elif setting == "cond_var":
+        j = rng.integers(0, d)
+        true_imp[j] = 1
+
+        y = rng.normal(size=n)
+        X[:, j] = rng.normal(scale=1 + 1.5 * (y > 0), size=n)
+
+    elif setting == "soft_interaction":
+        idx = rng.choice(d, 2, replace=False)
+        true_imp[idx] = 1
+
+        y = np.tanh(X[:, idx[0]] + X[:, idx[1]]) \
+            + 0.3 * rng.normal(size=n)
+    
+    elif setting == "masked_corr":
+        j = rng.integers(1, d)
+        true_imp[j] = 1
+
+        y = X[:, j] + 0.5 * rng.normal(size=n)
+
+        # create strong correlated proxy
+        X[:, j-1] = X[:, j] + 0.1 * rng.normal(size=n)
+
+    elif setting == "piecewise_linear":
+        j = rng.integers(0, d)
+        true_imp[j] = 1
+
+        y = np.where(X[:, j] > 0,
+                    2 * X[:, j],
+                    -0.5 * X[:, j]) \
+            + 0.3 * rng.normal(size=n)
+        
+    elif setting == "label_noise_gate":
+        j = rng.integers(0, d)
+        true_imp[j] = 1
+
+        base = X[:, j]
+        noise = rng.normal(scale=1 + 2 * (base > 0), size=n)
+        y = base + noise
+    
+    elif setting == "sin_envelope":
+        j = rng.integers(0, d)
+        true_imp[j] = 1
+
+        y = np.sin(X[:, j]) * (1 + 0.5 * X[:, j]**2) \
+            + 0.3 * rng.normal(size=n)
+
+    else:
+        raise ValueError("Unknown setting.")
+
+    return X, y, true_imp
+
+
+
 def _estimate_distribution(X, shrink=True, cov_estimator='ledoit_wolf', n_jobs=1):
     """
     Adapted from hidimstat: https://github.com/ja-che/hidimstat

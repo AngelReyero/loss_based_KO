@@ -120,7 +120,8 @@ dashes = {
 
 alpha = 0.05
 
-settings = ['adjacent', 'hidim', 'nongauss', 'poly', 'sin', 'sinusoidal', 'spaced', 'interact_pairwise', 'interact_highorder', 'interact_latent', 'interact_oscillatory', 'interact_sin']
+settings=['single_index_threshold', 'mean_flip', 'cond_var', 'soft_interaction', 'masked_corr', 'piecewise_linear', 'label_noise_gate', 'sin_envelope']
+#settings = ['adjacent', 'hidim', 'nongauss', 'poly', 'sin', 'sinusoidal', 'spaced', 'interact_pairwise', 'interact_highorder', 'interact_latent', 'interact_oscillatory', 'interact_sin']
 models = ['GB', 'lasso', 'NN', 'RF', 'SL']
 for model in models:
     for setting in settings:
