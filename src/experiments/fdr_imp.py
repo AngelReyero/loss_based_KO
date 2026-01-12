@@ -221,7 +221,7 @@ def main(args):
         n_bootstraps=1,
         random_state=seed,
     )
-    execution_time[0] = time.time() - start_time + tr_KO_time + imp_time_CPI_KO
+    execution_time[0] = time.time() - start_time
     estim_imp[0, :p]= test_scores.reshape((p,))
     r2_values[0] = r2_values[3]
 

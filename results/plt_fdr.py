@@ -80,6 +80,7 @@ dashes = {
 
 settings=["cos", "interact_sin", "interact_pairwise", "interact_highorder", "interact_oscillatory"]
 settings=["adjacent", "spaced", "sinusoidal", "hidim", "nongauss", "poly"]
+settings = ["nongauss", "hidim", "spaced", "poly", "interact_pairwise", "adjacent", "cos"]
 models=["lasso", "RF", "NN", "GB", "SL"]
 
 fdr=0.2

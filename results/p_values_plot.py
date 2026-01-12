@@ -120,11 +120,13 @@ dashes = {
 
 alpha = 0.05
 
-settings=['single_index_threshold', 'mean_flip', 'cond_var', 'soft_interaction', 'masked_corr', 'piecewise_linear', 'label_noise_gate', 'sin_envelope']
+#settings=['single_index_threshold', 'mean_flip', 'cond_var', 'soft_interaction', 'masked_corr', 'piecewise_linear', 'label_noise_gate', 'sin_envelope']
 #settings = ['adjacent', 'hidim', 'nongauss', 'poly', 'sin', 'sinusoidal', 'spaced', 'interact_pairwise', 'interact_highorder', 'interact_latent', 'interact_oscillatory', 'interact_sin']
+
+settings = ["adjacent", "spaced", "nongauss",'single_index_threshold', 'cond_var', 'masked_corr', 'label_noise_gate']
 models = ['GB', 'lasso', 'NN', 'RF', 'SL']
-for model in models:
-    for setting in settings:
+for setting in settings:
+    for model in models:
         csv_files = glob.glob(f"res_csv/p_values_{setting}_{model}_seed*.csv")
         df = pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True)
 

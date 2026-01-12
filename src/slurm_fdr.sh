@@ -6,16 +6,16 @@
 #SBATCH --cpus-per-task=5
 #SBATCH --mem=8G
 #SBATCH --partition="normal,parietal"
-#SBATCH --array=0-499%10  # 6 settings × 5 models × 20 seeds = 600 jobs, 5 concurrent
+#SBATCH --array=0-1749%10  # 7 settings × 5 models × 50 seeds = 1750 jobs, 5 concurrent
 
 # Define settings and models
-settings=("cos" "interact_sin" "interact_pairwise" "interact_highorder" "interact_oscillatory")
+settings=("nongauss" "hidim" "spaced" "poly" "interact_pairwise" "adjacent" "cos")
 models=("lasso" "RF" "NN" "GB" "SL")
 
 # Compute indices
 n_settings=${#settings[@]}
 n_models=${#models[@]}
-n_seeds=20
+n_seeds=50
 
 setting_idx=$((SLURM_ARRAY_TASK_ID / (n_models * n_seeds)))
 model_idx=$(( (SLURM_ARRAY_TASK_ID / n_seeds) % n_models ))
