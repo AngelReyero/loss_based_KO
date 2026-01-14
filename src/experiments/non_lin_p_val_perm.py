@@ -271,13 +271,13 @@ def main(args):
 
     for idx, ptype in enumerate(['sign_test','wilcox']):
         start_time = time.time()
-        p_val[29+idx, :] = cpi_knockoffs.score(X, y, n_perm=10, p_val=ptype)["pval"].reshape(p)
+        p_val[29+idx, :] = cpi_knockoffs.score(X, y, n_perm=5, p_val=ptype)["pval"].reshape(p)
         execution_time[29+idx] = time.time() - start_time + cpi_knockoffs_time
     r2_values[29:31] = r2_score(y_r2, model_ko.predict(X_r2))
 
     for idx, ptype in enumerate(['sign_test','wilcox']):
         start_time = time.time()
-        p_val[31+idx, :] = cpi_knockoffs.score(X, y, n_perm=100, p_val=ptype)["pval"].reshape(p)
+        p_val[31+idx, :] = cpi_knockoffs.score(X, y, n_perm=10, p_val=ptype)["pval"].reshape(p)
         execution_time[31+idx] = time.time() - start_time + cpi_knockoffs_time
     r2_values[31:33] = r2_score(y_r2, model_ko.predict(X_r2))
 
@@ -319,8 +319,8 @@ def main(args):
         "S-CPI2","S-CPI2_sqrt","S-CPI2_n","S-CPI2_bt","S-CPI2_sqd",
         "LOCO","LOCO_sqrt","LOCO_n","LOCO_bt","LOCO_sqd",
         "S-CPI_ST","S-CPI_Wilcox","LOCO_ST","LOCO_Wilcox",
-        "CPI_KO_ST","CPI_KO_Wilcox","dCRT","HRT","CPI_KO_ST_perm10","CPI_KO_Wilcox_perm10", 
-        "CPI_KO_ST_perm100","CPI_KO_Wilcox_perm100"
+        "CPI_KO_ST","CPI_KO_Wilcox","dCRT","HRT","CPI_KO_ST_perm5","CPI_KO_Wilcox_perm5", 
+        "CPI_KO_ST_perm10","CPI_KO_Wilcox_perm10"
     ]
     f_res = pd.DataFrame()
     for i, method in enumerate(methods):
@@ -333,7 +333,7 @@ def main(args):
     n_tag = f"_n{n}" if n != 300 else ""
 
     # base name
-    base = f"p_values_perm_{setting}_{base_model_name}{n_tag}"
+    base = f"p_values_perm2_{setting}_{base_model_name}{n_tag}"
 
     # add imputer if needed
     if imputer_model_name is not None:

@@ -6,16 +6,16 @@
 #SBATCH --cpus-per-task=5
 #SBATCH --mem=8G
 #SBATCH --partition="normal,parietal"
-#SBATCH --array=0-199%5  # 4 settings × 5 models × 10 seeds = 200 jobs, 10 concurrent
+#SBATCH --array=0-199%10  # 4 settings × 5 models × 10 seeds = 200 jobs, 10 concurrent
 
 # Define settings and models
-settings=('single_index_threshold' 'cond_var' 'masked_corr' 'label_noise_gate')
+settings=('masked_corr' 'single_index_threshold' 'cond_var' 'label_noise_gate')
 models=("lasso" "RF" "NN" "GB" "SL")
 
 # Compute indices
 n_settings=${#settings[@]}
 n_models=${#models[@]}
-n_seeds=50
+n_seeds=10
 
 setting_idx=$((SLURM_ARRAY_TASK_ID / (n_models * n_seeds)))
 model_idx=$(( (SLURM_ARRAY_TASK_ID / n_seeds) % n_models ))
@@ -23,7 +23,7 @@ seed_idx=$((SLURM_ARRAY_TASK_ID % n_seeds))
 
 setting=${settings[$setting_idx]}
 model=${models[$model_idx]}
-seed=$((seed_idx + 101))
+seed=$((seed_idx + 1))
 
 echo "Running setting=${setting}, model=${model}, seed=${seed}"
 

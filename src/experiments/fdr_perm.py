@@ -140,7 +140,7 @@ def main(args):
     r2_values[5:8] = r2_values[1]
 
     start_time = time.time()
-    cpi_KO_importance = cpi_knockoffs.score(X, y, n_perm=100,  p_val='wilcox')
+    cpi_KO_importance = cpi_knockoffs.score(X, y, n_perm=5,  p_val='wilcox')
     execution_time[6] = time.time() - start_time + tr_KO_time + imp_time_CPI_KO
     estim_imp[6, :p]= cpi_KO_importance["pval"].reshape((p,))
 
@@ -148,7 +148,7 @@ def main(args):
     estim_imp[5, :p]= cpi_KO_importance["importance"].reshape((p,))
 
     start_time = time.time()
-    cpi_KO_importance = cpi_knockoffs.score(X, y, n_perm=1000,  p_val='wilcox')
+    cpi_KO_importance = cpi_knockoffs.score(X, y, n_perm=10,  p_val='wilcox')
     execution_time[8] = time.time() - start_time + tr_KO_time + imp_time_CPI_KO
     estim_imp[8, :p]= cpi_KO_importance["pval"].reshape((p,))
 
@@ -208,7 +208,7 @@ def main(args):
 
     methods = [
                 "Knockoff","CPI_KO","CPI_KO_Wilcox",
-                'dCRT', 'HRT', "CPI_KO_perm", "CPI_KO_Wilcox_perm", "CPI_KO_perm2", "CPI_KO_Wilcox_perm2"
+                'dCRT', 'HRT', "CPI_KO_perm5", "CPI_KO_Wilcox_perm5", "CPI_KO_perm10", "CPI_KO_Wilcox_perm10"
             ]
     f_res = pd.DataFrame()
     for i, method in enumerate(methods):
@@ -218,7 +218,7 @@ def main(args):
             row[f"pval{j}"] = estim_imp[i, j]
         f_res = pd.concat([f_res, pd.DataFrame([row])], ignore_index=True)
 
-    csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), f"../../results/res_csv/KO_perm_{setting}_{base_model_name}_seed{seed}.csv"))
+    csv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), f"../../results/res_csv/KO_perm2_{setting}_{base_model_name}_seed{seed}.csv"))
 
     f_res.to_csv(csv_path, index=False)
 
