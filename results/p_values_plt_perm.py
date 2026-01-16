@@ -36,10 +36,10 @@ palette = {
     'Semi_KO_Wilcox': 'orange',
     'dCRT': 'magenta',
     'HRT': 'gold',
-    'Semi_KO_ST_perm10': 'cyan',
-    'Semi_KO_Wilcox_perm10': 'cyan',
-    'Semi_KO_ST_perm100': 'blue',
-    'Semi_KO_Wilcox_perm100': 'blue',
+    'Semi_KO_ST_perm5': 'cyan',
+    'Semi_KO_Wilcox_perm5': 'cyan',
+    'Semi_KO_ST_perm10': 'blue',
+    'Semi_KO_Wilcox_perm10': 'blue',
 }
 
 markers = {
@@ -124,16 +124,15 @@ dashes = {
 
 alpha = 0.05
 
-#settings=['single_index_threshold', 'mean_flip', 'cond_var', 'soft_interaction', 'masked_corr', 'piecewise_linear', 'label_noise_gate', 'sin_envelope']
-#settings = ['adjacent', 'hidim', 'nongauss', 'poly', 'sin', 'sinusoidal', 'spaced', 'interact_pairwise', 'interact_highorder', 'interact_latent', 'interact_oscillatory', 'interact_sin']
+#settings=["adjacent", 'masked_corr', "interact_oscillatory",  'cond_var', 'label_noise_gate', "spaced", "nongauss", "cos", "sinusoidal", "sin", "interact_sin", "hidim", "poly", "interact_pairwise", "interact_highorder", "interact_latent"]
 
-settings=["adjacent", "spaced", "nongauss", "cos", "sinusoidal", "sin", "interact_sin", "hidim", "poly", "interact_pairwise", "interact_highorder", "interact_latent", "interact_oscillatory", 'masked_corr',  'cond_var', 'label_noise_gate']
+settings=['masked_corr', 'single_index_threshold', 'cond_var', 'label_noise_gate',"adjacent", "spaced", "nongauss", "cos", "sinusoidal", "sin", "interact_sin", "hidim", "poly", "interact_pairwise", "interact_highorder", "interact_latent", "interact_oscillatory"]
 
 #settings = ["adjacent", 'single_index_threshold',"spaced", "nongauss",'single_index_threshold', 'cond_var', 'masked_corr', 'label_noise_gate']
 models = ['GB', 'lasso', 'NN', 'RF', 'SL']
 for setting in settings:
     for model in models:
-        csv_files = glob.glob(f"res_csv/p_values_perm_{setting}_{model}_seed*.csv")
+        csv_files = glob.glob(f"res_csv/p_values_perm2_{setting}_{model}_seed*.csv")
         df = pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True)
 
 
@@ -191,8 +190,8 @@ for setting in settings:
         df['method'] = df['method'].replace('CPI_KO_Wilcox', 'Semi_KO_Wilcox')
         df['method'] = df['method'].replace('CPI_KO_ST_perm10', 'Semi_KO_ST_perm10')
         df['method'] = df['method'].replace('CPI_KO_Wilcox_perm10', 'Semi_KO_Wilcox_perm10')
-        df['method'] = df['method'].replace('CPI_KO_ST_perm100', 'Semi_KO_ST_perm100')
-        df['method'] = df['method'].replace('CPI_KO_Wilcox_perm100', 'Semi_KO_Wilcox_perm100')
+        df['method'] = df['method'].replace('CPI_KO_ST_perm5', 'Semi_KO_ST_perm5')
+        df['method'] = df['method'].replace('CPI_KO_Wilcox_perm5', 'Semi_KO_Wilcox_perm5')
 
         # Bottom row for the fixed-n setting (boxplots)
 
@@ -279,4 +278,4 @@ for setting in settings:
             title_fontsize=13
         )
 
-        plt.savefig(f"new_figures/p_values_perm_{setting}_{model}.pdf", bbox_inches="tight")
+        plt.savefig(f"new_figures/p_values_perm2_{setting}_{model}.pdf", bbox_inches="tight")

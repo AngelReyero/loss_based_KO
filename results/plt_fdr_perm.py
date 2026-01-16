@@ -59,10 +59,10 @@ palette = {
     'HRT': 'gold',
     'Knockoff': 'blue',
     'Semi_KO': 'orange',
-    'Semi_KO_perm': 'green',
-    'Semi_KO_Wilcox_perm': 'purple',
-    'Semi_KO_perm2': 'cyan',
-    'Semi_KO_Wilcox_perm2': 'red'
+    'Semi_KO_perm5': 'green',
+    'Semi_KO_Wilcox_perm5': 'purple',
+    'Semi_KO_perm10': 'cyan',
+    'Semi_KO_Wilcox_perm10': 'red'
 }
 
 markers = {
@@ -89,15 +89,15 @@ models=["lasso", "RF", "NN", "GB", "SL"]
 fdr=0.2
 for setting in settings:
     for model in models:
-        csv_files = glob.glob(f"res_csv/KO_perm_{setting}_{model}_seed*.csv")
+        csv_files = glob.glob(f"res_csv/KO_perm2_{setting}_{model}_seed*.csv")
         df = pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True)
 
         df['method'] = df['method'].replace('CPI_KO', 'Semi_KO')
         df['method'] = df['method'].replace('CPI_KO_Wilcox', 'Semi_KO_Wilcox')
-        df['method'] = df['method'].replace('CPI_KO_perm', 'Semi_KO_perm')
-        df['method'] = df['method'].replace('CPI_KO_Wilcox_perm', 'Semi_KO_Wilcox_perm')
-        df['method'] = df['method'].replace('CPI_KO_perm2', 'Semi_KO_perm2')
-        df['method'] = df['method'].replace('CPI_KO_Wilcox_perm2', 'Semi_KO_Wilcox_perm2')
+        df['method'] = df['method'].replace('CPI_KO_perm5', 'Semi_KO_perm5')
+        df['method'] = df['method'].replace('CPI_KO_Wilcox_perm5', 'Semi_KO_Wilcox_perm5')
+        df['method'] = df['method'].replace('CPI_KO_perm10', 'Semi_KO_perm10')
+        df['method'] = df['method'].replace('CPI_KO_Wilcox_perm10', 'Semi_KO_Wilcox_perm10')
 
         powers = []
         fdps = []
@@ -229,5 +229,5 @@ for setting in settings:
 
         plt.tight_layout(rect=[0, 0.05, 1, 1])  # lower bottom margin, more space for legend
 
-        plt.savefig(f"new_figures/KO/KO_perm_{setting}_{model}.pdf",
+        plt.savefig(f"new_figures/KO/KO_perm2_{setting}_{model}.pdf",
                     bbox_inches="tight")
