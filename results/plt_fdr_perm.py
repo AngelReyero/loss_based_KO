@@ -103,7 +103,7 @@ for setting in settings:
         fdps = []
         auc_scores = []
 
-        methods_BH = {'Semi_KO_Wilcox', "dCRT", "HRT", 'Semi_KO_Wilcox_perm', 'Semi_KO_Wilcox_perm2'}
+        methods_BH = {'Semi_KO_Wilcox', "dCRT", "HRT", 'Semi_KO_Wilcox_perm5', 'Semi_KO_Wilcox_perm10'}
 
         for index, row in df.iterrows():
             n = int(row["n"])

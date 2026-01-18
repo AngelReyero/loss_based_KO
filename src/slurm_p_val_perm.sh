@@ -6,16 +6,17 @@
 #SBATCH --cpus-per-task=5
 #SBATCH --mem=8G
 #SBATCH --partition="normal,parietal"
-#SBATCH --array=0-649%10  # 13 settings × 5 models × 10 seeds = 650 jobs, 5 concurrent
+#SBATCH --array=0-999%5  # 4 settings × 5 models × 50 seeds = 1000 jobs, 5 concurrent
 
 # Define settings and models
-settings=("adjacent" "spaced" "nongauss" "cos" "sinusoidal" "sin" "interact_sin" "hidim" "poly" "interact_pairwise" "interact_highorder" "interact_latent" "interact_oscillatory" )
+# settings=("adjacent" "spaced" "nongauss" "cos" "sinusoidal" "sin" "interact_sin" "hidim" "poly" "interact_pairwise" "interact_highorder" "interact_latent" "interact_oscillatory" )
+settings=("adjacent" "nongauss" "spaced" "sinusoidal")
 models=("lasso" "RF" "NN" "GB" "SL")
 
 # Compute indices
 n_settings=${#settings[@]}
 n_models=${#models[@]}
-n_seeds=10
+n_seeds=50
 
 setting_idx=$((SLURM_ARRAY_TASK_ID / (n_models * n_seeds)))
 model_idx=$(( (SLURM_ARRAY_TASK_ID / n_seeds) % n_models ))
@@ -23,7 +24,7 @@ seed_idx=$((SLURM_ARRAY_TASK_ID % n_seeds))
 
 setting=${settings[$setting_idx]}
 model=${models[$model_idx]}
-seed=$((seed_idx + 101))
+seed=$((seed_idx + 51))
 
 echo "Running setting=${setting}, model=${model}, seed=${seed}"
 
