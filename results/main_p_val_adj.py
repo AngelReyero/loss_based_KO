@@ -160,8 +160,9 @@ for setting in settings:
 
             if i == 1:
                 ax.axvline(x=0.05, color='red', linestyle='--', linewidth=2)
+            
             ax.set_xlabel(label, fontsize=22)
-
+            ax.tick_params(axis='x', labelsize=16)
             if i == 2:
                 ax.axvline(x=0.5, color='red', linestyle='--', linewidth=2)
 

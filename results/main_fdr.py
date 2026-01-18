@@ -164,9 +164,9 @@ for setting in settings:
             ax=ax[0]
         )
         ax[0].set_ylabel("")
-        ax[0].set_xlabel("Power", fontsize=18)
-        ax[0].tick_params(axis='y', labelsize=12)
-        ax[0].tick_params(axis='x', labelsize=12)
+        ax[0].set_xlabel("Power", fontsize=22)
+        ax[0].tick_params(axis='y', labelsize=22)
+        ax[0].tick_params(axis='x', labelsize=16)
 
         # --- 2. FDP / Type-I Error ---
         plot_func(
@@ -179,9 +179,9 @@ for setting in settings:
             ax=ax[1]
         )
         ax[1].set_ylabel("")
-        ax[1].set_xlabel("FDP", fontsize=18)
+        ax[1].set_xlabel("FDP", fontsize=22)
         ax[1].set_yticklabels([])
-        ax[1].tick_params(axis='x', labelsize=12)
+        ax[1].tick_params(axis='x', labelsize=16)
         # Add vertical line at FDP = 0.2
         ax[1].axvline(x=0.2, color='red', linestyle='--', linewidth=2)
 
@@ -196,9 +196,9 @@ for setting in settings:
             ax=ax[2]
         )
         ax[2].set_ylabel("")
-        ax[2].set_xlabel("AUC", fontsize=18)
+        ax[2].set_xlabel("AUC", fontsize=22)
         ax[2].set_yticklabels([])
-        ax[2].tick_params(axis='x', labelsize=12)
+        ax[2].tick_params(axis='x', labelsize=16)
         ax[2].axvline(x=0.5, color='red', linestyle='--', linewidth=2)
 
         
@@ -214,7 +214,7 @@ for setting in settings:
         # ---- SUPTITLE (safe placement) ----
         fig.suptitle(
             f"Inference Results (R2 HRT={hrt_r2_mean:.3f}, R2 SKO={Sko_r2_mean:.3f})",
-            fontsize=20
+            fontsize=22
         )
         plt.savefig(f"main_figures/KO/main_{setting}_{model}.pdf",
                     bbox_inches="tight")
