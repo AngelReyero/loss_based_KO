@@ -118,8 +118,8 @@ for setting in settings:
 
         # Bottom row for the fixed-n setting (boxplots)
 
-        sns.set(style="whitegrid", font_scale=1.3)
-
+        #sns.set(style="whitegrid", font_scale=1.3)
+        sns.set_style("white")
         fig, axes = plt.subplots(1, 4, figsize=(24, 10))
         metrics = ['tr_time', 'power', 'type_I', 'AUC']
         labels = ['Computation Time (s)', 'Power', 'Type-I Error', 'AUC']

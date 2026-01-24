@@ -11,7 +11,7 @@ from scipy.stats import binomtest
 
 class CPI_KO(BaseEstimator):
     """
-    Sobol Conditional Permutation Importance (CPI) algorithm.
+    Semi-Knockoffs algorithm.
     :footcite:t:`
 
     Parameters

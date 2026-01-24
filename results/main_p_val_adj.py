@@ -118,8 +118,8 @@ for setting in settings:
 
         # Bottom row for the fixed-n setting (boxplots)
 
-        sns.set(style="whitegrid", font_scale=1.3)
-
+        #sns.set(style="whitegrid", font_scale=1.3)
+        sns.set_style("white")
         fig, axes = plt.subplots(1, 3, figsize=(18, 10))
         metrics = ['power', 'type_I', 'AUC']
         labels = ['Power', 'Type-I Error', 'AUC']
@@ -152,7 +152,7 @@ for setting in settings:
             
             if i == 0:
                 ax.set_ylabel("", fontsize=1)
-                ax.tick_params(axis='y', labelsize=22)
+                ax.tick_params(axis='y', labelsize=24)
             else:
                 ax.set_ylabel("")
                 ax.set_yticklabels([])   # remove method names
@@ -161,7 +161,7 @@ for setting in settings:
             if i == 1:
                 ax.axvline(x=0.05, color='red', linestyle='--', linewidth=2)
             
-            ax.set_xlabel(label, fontsize=22)
+            ax.set_xlabel(label, fontsize=24)
             ax.tick_params(axis='x', labelsize=16)
             if i == 2:
                 ax.axvline(x=0.5, color='red', linestyle='--', linewidth=2)
@@ -194,7 +194,7 @@ for setting in settings:
         # ---- SUPTITLE (safe placement) ----
         fig.suptitle(
             f"Inference Results (R2 HRT={hrt_r2_mean:.3f}, R2 SKO={semi_ko_r2_mean:.3f})",
-            fontsize=22
+            fontsize=24
         )
 
         # ---- LEGEND (placed below plots) ----
