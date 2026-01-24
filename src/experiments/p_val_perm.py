@@ -14,7 +14,7 @@ from regression_sampler import RegressionSamplerSingle
 from hidimstat import D0CRT
 from pyhrt.hrt import hrt
 from loco import LOCO
-from cpi_KO import CPI_KO
+from semi_KO import Semi_KO
 from sobol_CPI import Sobol_CPI
 from sklearn.ensemble import StackingRegressor
 from sklearn.linear_model import LassoCV, ElasticNetCV, RidgeCV, LinearRegression
@@ -24,7 +24,7 @@ from sklearn.linear_model import LassoCV, ElasticNetCV, RidgeCV, LinearRegressio
 # Argument parser
 # ------------------------------
 def parse_args():
-    parser = argparse.ArgumentParser(description="Comparison of CPI_KO vs LOCO, dCRT, HRT, CPI")
+    parser = argparse.ArgumentParser(description="Comparison of Semi_KO vs LOCO, dCRT, HRT, CPI")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin', 'cos', "interact_pairwise", "interact_highorder" ,"interact_latent", "interact_sin", "interact_oscillatory"], required=True)
     parser.add_argument("--model", type=str, choices=['lasso','RF','NN','GB','SL'], required=True)
@@ -254,7 +254,7 @@ def main(args):
     model_ko.fit(X, y)
     nu_j = clone(imputer)
     rho_j = clone(imputer)
-    cpi_knockoffs = CPI_KO(
+    cpi_knockoffs = Semi_KO(
         estimator=model_ko,
         imputation_model=nu_j,
         imputation_model_y=rho_j,
@@ -320,8 +320,8 @@ def main(args):
         "S-CPI2","S-CPI2_sqrt","S-CPI2_n","S-CPI2_bt","S-CPI2_sqd",
         "LOCO","LOCO_sqrt","LOCO_n","LOCO_bt","LOCO_sqd",
         "S-CPI_ST","S-CPI_Wilcox","LOCO_ST","LOCO_Wilcox",
-        "CPI_KO_ST","CPI_KO_Wilcox","dCRT","HRT", "CPI_KO_ST_perm5","CPI_KO_Wilcox_perm5", 
-        "CPI_KO_ST_perm10","CPI_KO_Wilcox_perm10"
+        "Semi_KO_ST","Semi_KO_Wilcox","dCRT","HRT", "Semi_KO_ST_perm5","Semi_KO_Wilcox_perm5", 
+        "Semi_KO_ST_perm10","Semi_KO_Wilcox_perm10"
     ]
     f_res = pd.DataFrame()
     for i, method in enumerate(methods):

@@ -15,7 +15,7 @@ from regression_sampler import RegressionSamplerSingle
 from hidimstat import D0CRT
 from pyhrt.hrt import hrt
 from loco import LOCO
-from cpi_KO import CPI_KO
+from semi_KO import Semi_KO
 from sobol_CPI import Sobol_CPI
 from sklearn.ensemble import StackingRegressor
 from hidimstat.knockoffs import model_x_knockoff
@@ -29,7 +29,7 @@ from sklearn.model_selection import KFold
 # Argument parser
 # ------------------------------
 def parse_args():
-    parser = argparse.ArgumentParser(description="Comparison of CPI_KO vs dCRT, HRT")
+    parser = argparse.ArgumentParser(description="Comparison of Semi_KO vs dCRT, HRT")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     parser.add_argument("--setting", type=str, choices=['adjacent','spaced','sinusoidal','hidim','nongauss','poly', 'sin', 'cos', 'interact_sin', 'interact_pairwise', 'interact_highorder', 'interact_oscillatory'], required=True)
     parser.add_argument("--model", type=str, choices=['lasso','RF','NN','GB','SL'], required=True)
@@ -117,43 +117,43 @@ def main(args):
     tr_KO_time = time.time()-start_time
 
     start_time = time.time()
-    cpi_knockoffs= CPI_KO(
+    cpi_knockoffs= Semi_KO(
         estimator=model,
         imputation_model=RidgeCV(alphas=np.logspace(-3, 3, 10), cv=5),
         imputation_model_y=RidgeCV(alphas=np.logspace(-3, 3, 10), cv=5),
         random_state=seed,
         n_jobs=1)
     cpi_knockoffs.fit(X, y)
-    imp_time_CPI_KO = time.time()-start_time
+    imp_time_Semi_KO = time.time()-start_time
     r2_values[1:2] = r2_score(y_r2, model.predict(X_r2))
 
     start_time = time.time()
-    cpi_KO_importance = cpi_knockoffs.score(X, y, n_perm=1,  p_val='wilcox')
-    execution_time[2] = time.time() - start_time + tr_KO_time + imp_time_CPI_KO
-    estim_imp[2, :p]= cpi_KO_importance["pval"].reshape((p,))
+    Semi_KO_importance = cpi_knockoffs.score(X, y, n_perm=1,  p_val='wilcox')
+    execution_time[2] = time.time() - start_time + tr_KO_time + imp_time_Semi_KO
+    estim_imp[2, :p]= Semi_KO_importance["pval"].reshape((p,))
 
     execution_time[1] = execution_time[2]
-    estim_imp[1, :p]= cpi_KO_importance["importance"].reshape((p,))
+    estim_imp[1, :p]= Semi_KO_importance["importance"].reshape((p,))
 
     # CPI-KO more permutations
 
     r2_values[5:8] = r2_values[1]
 
     start_time = time.time()
-    cpi_KO_importance = cpi_knockoffs.score(X, y, n_perm=5,  p_val='wilcox')
-    execution_time[6] = time.time() - start_time + tr_KO_time + imp_time_CPI_KO
-    estim_imp[6, :p]= cpi_KO_importance["pval"].reshape((p,))
+    Semi_KO_importance = cpi_knockoffs.score(X, y, n_perm=5,  p_val='wilcox')
+    execution_time[6] = time.time() - start_time + tr_KO_time + imp_time_Semi_KO
+    estim_imp[6, :p]= Semi_KO_importance["pval"].reshape((p,))
 
     execution_time[5] = execution_time[6]
-    estim_imp[5, :p]= cpi_KO_importance["importance"].reshape((p,))
+    estim_imp[5, :p]= Semi_KO_importance["importance"].reshape((p,))
 
     start_time = time.time()
-    cpi_KO_importance = cpi_knockoffs.score(X, y, n_perm=10,  p_val='wilcox')
-    execution_time[8] = time.time() - start_time + tr_KO_time + imp_time_CPI_KO
-    estim_imp[8, :p]= cpi_KO_importance["pval"].reshape((p,))
+    Semi_KO_importance = cpi_knockoffs.score(X, y, n_perm=10,  p_val='wilcox')
+    execution_time[8] = time.time() - start_time + tr_KO_time + imp_time_Semi_KO
+    estim_imp[8, :p]= Semi_KO_importance["pval"].reshape((p,))
 
     execution_time[7] = execution_time[8]
-    estim_imp[7, :p]= cpi_KO_importance["importance"].reshape((p,))
+    estim_imp[7, :p]= Semi_KO_importance["importance"].reshape((p,))
 
 
     # HRT
@@ -207,8 +207,8 @@ def main(args):
 
 
     methods = [
-                "Knockoff","CPI_KO","CPI_KO_Wilcox",
-                'dCRT', 'HRT', "CPI_KO_perm5", "CPI_KO_Wilcox_perm5", "CPI_KO_perm10", "CPI_KO_Wilcox_perm10"
+                "Knockoff","Semi_KO","Semi_KO_Wilcox",
+                'dCRT', 'HRT', "Semi_KO_perm5", "Semi_KO_Wilcox_perm5", "Semi_KO_perm10", "Semi_KO_Wilcox_perm10"
             ]
     f_res = pd.DataFrame()
     for i, method in enumerate(methods):

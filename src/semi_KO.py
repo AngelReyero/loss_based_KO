@@ -9,7 +9,7 @@ from scipy.stats import wilcoxon
 import random
 from scipy.stats import binomtest
 
-class CPI_KO(BaseEstimator):
+class Semi_KO(BaseEstimator):
     """
     Semi-Knockoffs algorithm.
     :footcite:t:`
