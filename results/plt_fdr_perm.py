@@ -83,8 +83,11 @@ dashes = {
     'Semi_KO': (1, 1),
 }
 
-settings = ["adjacent", "hidim", "poly", "spaced", "nongauss", "sin", "sinusoidal", "cos", "interact_sin", "interact_pairwise", "interact_highorder", "interact_oscillatory"]
-models=["lasso", "RF", "NN", "GB", "SL"]
+#settings = ["adjacent", "hidim", "poly", "spaced", "nongauss", "sin", "sinusoidal", "cos", "interact_sin", "interact_pairwise", "interact_highorder", "interact_oscillatory"]
+#models=["lasso", "RF", "NN", "GB", "SL"]
+
+settings=["gauss_mixt", "log", "square"] #("adjacent" "hidim" "nongauss" "cos" "spaced")
+models=["lasso", "RF", "NN", "GB"]
 
 fdr=0.2
 for setting in settings:

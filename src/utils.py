@@ -14,6 +14,9 @@ from statsmodels.distributions.empirical_distribution import ECDF, monotone_fn_i
 from tqdm import tqdm
 from sklearn.preprocessing import PolynomialFeatures
 import random
+import pandas as pd
+
+from sklearn.datasets import fetch_california_housing, load_diabetes
 
 
 
@@ -126,6 +129,51 @@ def stat_coefficient_diff(X, X_tilde, y, estimator, fdr, preconfigure_estimator=
 
     return test_score, ko_thr, selected
 
+
+
+def gen_gaussian_mixture(n, d, cov, mean_shift=3.0, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
+    
+    # mixture labels in {0,1}
+    z = rng.integers(0, 2, size=n)
+    
+    # means are ±μ for each component
+    mu = mean_shift * np.ones(d)
+    
+    # same isotropic cov for both
+    X = np.empty((n, d))
+    for k in (0, 1):
+        idx = (z == k)
+        nk = idx.sum()
+        X[idx] = rng.multivariate_normal(
+            mean = (1 if k == 1 else -1) * mu,
+            cov  = cov,
+            size = nk,
+        )
+    
+    return X  
+
+
+def gen_nonlinear_lognormal(n, d, cov, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
+    
+    # latent Gaussian
+    Z = rng.multivariate_normal(np.zeros(d), cov, size=n)
+    
+    # nonlinear map destroys Gaussian copula assumptions
+    X = np.exp(Z)               # lognormal
+    
+    return X
+
+def gen_square_map(n, d, cov, rng=None):
+    rng = np.random.default_rng() if rng is None else rng
+    
+    Z = rng.multivariate_normal(np.zeros(d), cov, size=n)
+    
+    # square destroys sign + creates heavy asymmetry
+    X = Z**2
+    
+    return X
 
 def knockoff_threshold(test_score, fdr=0.1):
     """
@@ -420,6 +468,12 @@ def GenSynthDataset(
         Xraw = rng.standard_t(df=3, size=(n, d))
         L = np.linalg.cholesky(cov)
         X = Xraw @ L.T
+    elif setting == 'gauss_mixt':
+        X = gen_gaussian_mixture(n, d, cov,  mean_shift=3.0, rng=rng)
+    elif setting == 'log':
+        X = gen_nonlinear_lognormal(n, d, cov, rng=rng)
+    elif setting == 'square':
+        X = gen_square_map(n, d, cov, rng=rng)
     else:
         X = rng.multivariate_normal(np.zeros(d), cov, size=n)
 
@@ -481,7 +535,7 @@ def GenSynthDataset(
         y = X[:, idx] @ beta + rng.normal(scale=1, size=n)
 
     # ---------- Non-Gaussian Heavy-Tailed X ----------------------
-    elif setting == "nongauss":
+    elif setting in {"nongauss", "gauss_mixt", "log", "square"}:
         k = max(1, int(sparsity * d))
         idx = np.arange(k)
         true_imp[idx] = 1
@@ -724,6 +778,125 @@ def GenNonLinDataset(
 
     return X, y, true_imp
 
+
+def get_real_dataset(name):
+    """
+    Load real datasets with continuous X and Y.
+
+    Returns:
+        X : np.ndarray
+        y : np.ndarray
+        feature_names : list
+    """
+
+    name = name.lower()
+
+    # ---------------------- CALIFORNIA HOUSING ----------------------
+    if name == "california":
+        data = fetch_california_housing()
+        return data.data, data.target, list(data.feature_names)
+
+    # ----------------------------- DIABETES --------------------------
+    elif name == "diabetes":
+        data = load_diabetes()
+        return data.data, data.target, data.feature_names
+
+    # ---------------------- CONCRETE (UCI) ---------------------------
+    elif name == "concrete":
+        df = pd.read_excel("data/Concrete_Data.xls", engine="xlrd")
+    
+        # Always treat the last column as the target Y
+        y = df.iloc[:, -1].values  
+        
+        # First 8 columns are features
+        X = df.iloc[:, :-1].values  
+        feature_names = list(df.columns[:-1])
+        return X, y, feature_names
+
+    # ------------------------ WINE QUALITY ---------------------------
+    elif name == "wine-red":
+        df = pd.read_csv("data/winequality-red.csv", sep=";")
+        X = df.drop(columns=["quality"]).values
+        y = df["quality"].values
+        return X, y, list(df.drop(columns=["quality"]).columns)
+
+    elif name == "wine-white":
+        df = pd.read_csv("data/winequality-white.csv", sep=";")
+        X = df.drop(columns=["quality"]).values
+        y = df["quality"].values
+        return X, y, list(df.drop(columns=["quality"]).columns)
+
+    # ------------------------ ENERGY EFFICIENCY ----------------------
+    elif name == "energy":
+        df = pd.read_excel("data/ENB2012_data.xlsx")
+        X = df.iloc[:, :-2].values      # first 8 features
+        y = df.iloc[:, -2].values       # heating load
+        return X, y, list(df.columns[:-2])
+    
+    elif name == "wdbc":
+        # Load raw data
+        col_names = ['id','diagnosis'] + [f'{feat}{stat}' for feat in
+                ['radius','texture','perimeter','area','smoothness','compactness',
+                    'concavity','concave_points','symmetry','fractal_dimension']
+                for stat in ['_mean','_se','_worst']]
+        df = pd.read_csv('data/wdbc.data', header=None, names=col_names)
+
+        # Drop ID
+        df = df.drop(columns=['id'])
+
+        # Convert diagnosis to binary
+        df['diagnosis'] = df['diagnosis'].map({'M':1, 'B':0})
+
+        X = df.drop(columns=['diagnosis']).values
+        y = df['diagnosis'].values
+
+        feature_names = list(df.drop(columns=['diagnosis']).columns)
+        return X, y, feature_names
+
+    else:
+        raise ValueError(f"Dataset {name} not recognized.")
+    
+
+def add_correlated_feature(X, target_corr=0.3, seed=0):
+    """
+    Add an artificial feature X_fake correlated with the existing features.
+
+    X_fake = alpha * Z + sqrt(1-alpha^2)*eps
+    where Z = weighted combination of real features.
+
+    Parameters
+    ----------
+    X : np.ndarray, shape (n, p)
+        Real data (continuous).
+    target_corr : float
+        Desired correlation with existing features.
+    seed : int
+
+    Returns
+    -------
+    X_new : np.ndarray, shape (n, p+1)
+    """
+    rng = np.random.RandomState(seed)
+
+    n, p = X.shape
+
+    # Combine existing features into a latent factor
+    w = rng.normal(size=p)
+    w /= np.linalg.norm(w)
+    Z = X @ w  # shape (n,)
+
+    # Generate Gaussian noise
+    eps = rng.normal(size=n)
+
+    # Convert correlation to linear mixture coefficient
+    # This produces Corr(Z, X_fake) = target_corr
+    alpha = target_corr  
+    alpha = np.clip(alpha, 0, 0.99)
+
+    X_fake = alpha * Z + np.sqrt(1 - alpha**2) * eps
+
+    # Append the new feature
+    return np.column_stack([X, X_fake])
 
 
 def _estimate_distribution(X, shrink=True, cov_estimator='ledoit_wolf', n_jobs=1):

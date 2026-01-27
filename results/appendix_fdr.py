@@ -57,7 +57,7 @@ palette = {
     'Semi_KO_Wilcox': 'orange',
     'dCRT': 'magenta',
     'HRT': 'cyan',
-    'Knockoff': 'blue',
+    'Knockoff': 'salmon',
     'Semi_KO': 'orange',
     'Semi_KO_perm5': 'gold',
     'Semi_KO_Wilcox_perm5': 'gold',
@@ -244,7 +244,7 @@ for setting in settings:
 
         # ---- SUPTITLE (safe placement) ----
         fig.suptitle(
-            f"Inference Results (R2 HRT={hrt_r2_mean:.3f}, R2 Semi_KO={semi_ko_r2_mean:.3f})",
+            f"Inference Results ($R^2$ HRT={hrt_r2_mean:.3f}, $R^2$ Semi_KO={semi_ko_r2_mean:.3f})",
             fontsize=20
         )
         plt.savefig(f"main_figures/KO/{setting}_{model}.pdf",

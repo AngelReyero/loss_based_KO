@@ -57,7 +57,7 @@ palette = {
     'SKO_Wcx': 'orange',
     'dCRT': 'magenta',
     'HRT': 'cyan',
-    'Knockoff': 'blue',
+    'Knockoff': 'salmon',
     'SKO': 'orange',
     'SKO_p5': 'gold',
     'SKO_Wcx_p5': 'gold',
@@ -213,7 +213,7 @@ for setting in settings:
 
         # ---- SUPTITLE (safe placement) ----
         fig.suptitle(
-            f"Inference Results (R2 HRT={hrt_r2_mean:.3f}, R2 SKO={Sko_r2_mean:.3f})",
+            f"Inference Results ($R^2$ HRT={hrt_r2_mean:.3f}, $R^2$ SKO={Sko_r2_mean:.3f})",
             fontsize=22
         )
         plt.savefig(f"main_figures/KO/main_{setting}_{model}.pdf",

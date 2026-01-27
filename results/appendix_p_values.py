@@ -191,7 +191,7 @@ for setting in settings:
 
         # ---- SUPTITLE (safe placement) ----
         fig.suptitle(
-            f"Inference Results (R2 HRT={hrt_r2_mean:.3f}, R2 Semi_KO={semi_ko_r2_mean:.3f})",
+            f"Inference Results ($R^2$ HRT={hrt_r2_mean:.3f}, $R^2$ Semi_KO={semi_ko_r2_mean:.3f})",
             fontsize=18
         )
 

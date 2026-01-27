@@ -271,13 +271,13 @@ def main(args):
 
     for idx, ptype in enumerate(['sign_test','wilcox']):
         start_time = time.time()
-        p_val[29+idx, :] = cpi_knockoffs.score(X, y, n_perm=10, p_val=ptype)["pval"].reshape(p)
+        p_val[29+idx, :] = cpi_knockoffs.score(X, y, n_perm=5, p_val=ptype)["pval"].reshape(p)
         execution_time[29+idx] = time.time() - start_time + cpi_knockoffs_time
     r2_values[29:31] = r2_score(y_r2, model_ko.predict(X_r2))
 
     for idx, ptype in enumerate(['sign_test','wilcox']):
         start_time = time.time()
-        p_val[31+idx, :] = cpi_knockoffs.score(X, y, n_perm=100, p_val=ptype)["pval"].reshape(p)
+        p_val[31+idx, :] = cpi_knockoffs.score(X, y, n_perm=10, p_val=ptype)["pval"].reshape(p)
         execution_time[31+idx] = time.time() - start_time + cpi_knockoffs_time
     r2_values[31:33] = r2_score(y_r2, model_ko.predict(X_r2))
 
