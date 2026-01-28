@@ -110,7 +110,7 @@ for setting in settings:
         sns.set_style("white")
         fig, axes = plt.subplots(1, 3, figsize=(18, 10))
         metrics = ['tr_time', 'power', 'type_I']
-        labels = ['Computation Time (s)', 'Power', 'Type-I Error']
+        labels = ['Computation Time (s)', 'Discoveries', 'Type-I Error']
         methods_to_keep = ['Sobol-CPI(1)_sqrt', 'Sobol-CPI(1)_Wilcox', 'Sobol-CPI(100)_sqrt', 'LOCO-W', 'LOCO_sqrt', 'LOCO_Wilcox','dCRT' , 'HRT', 'Semi_KO_Wilcox', 'Semi_KO_Wilcox_perm5']
 
         df_plot = df[df['method'].isin(methods_to_keep)].copy()
@@ -120,31 +120,79 @@ for setting in settings:
 
 
         for ax, metric, label in zip(axes, metrics, labels):
+            if metric == 'tr_time':
+                sns.boxplot(
+                    data=df_plot,
+                    y='method',         # horizontal orientation
+                    x=metric,
+                    order=methods_to_keep,
+                    palette=palette,
+                    ax=ax,
+                    linewidth=1.3,
+                    fliersize=2,
+                    orient='h'
+                )
+            elif metric == 'power':
+                df_c = (
+                    df_plot.groupby(['method', metric])
+                    .size()
+                    .reset_index(name='freq')
+                )
+                gamma = 20           # >1 => bigger differentiation
+                df_c['size'] = df_c['freq'] ** gamma
+                df_c['method'] = pd.Categorical(df_c['method'],
+                                    categories=methods_to_keep,
+                                    ordered=True)
 
-            df_c = (
-                df_plot.groupby(['method', metric])
-                .size()
-                .reset_index(name='freq')
-            )
-            gamma = 20           # >1 => bigger differentiation
-            df_c['size'] = df_c['freq'] ** gamma
-            df_c['method'] = pd.Categorical(df_c['method'],
-                                categories=methods_to_keep,
-                                ordered=True)
+                sns.scatterplot(
+                    data=df_c,
+                    x=metric,
+                    y='method',
+                    size='freq',
+                    hue_order=methods_to_keep,
+                    sizes=(1, 500), # min/max point sizes
+                    hue='method',
+                    palette=palette_filtered,
+                    legend=False,
+                    #order=methods_to_keep,
+                    ax=ax
+                )
+            if metric == 'type_I':
+                ax.clear()
+                type_stats = df_plot.groupby('method')['type_I'].agg(
+                    mean_type='mean',
+                    sem_type=lambda x: np.std(x, ddof=1)/np.sqrt(len(x))
+                ).reset_index()
 
-            sns.scatterplot(
-                data=df_c,
-                x=metric,
-                y='method',
-                size='freq',
-                hue_order=methods_to_keep,
-                sizes=(1, 500), # min/max point sizes
-                hue='method',
-                palette=palette_filtered,
-                legend=False,
-                #order=methods_to_keep,
-                ax=ax
-            )
+                # Horizontal barplot
+                sns.barplot(
+                    data=type_stats,
+                    y='method',
+                    x='mean_type',
+                    order=methods_to_keep,
+                    palette=palette,
+                    ax=ax,
+                    ci=None
+                )
+
+                # Get the positions of each bar (seaborn returns a list of Rectangle objects)
+                bars = ax.patches
+                for bar, sem in zip(bars, type_stats['sem_type']):
+                    # y-center of the bar
+                    y = bar.get_y() + bar.get_height() / 2
+                    # x-center is bar.get_width() → length of the bar
+                    ax.errorbar(
+                        x=bar.get_width(),
+                        y=y,
+                        xerr=[[min(sem, bar.get_width())], [sem]],
+                        fmt='none',
+                        ecolor='black',
+                        capsize=5,
+                        lw=1.5
+                    )
+
+
+            
             if metric == 'tr_time':
                 ax.set_xscale('log')
                 ax.set_ylabel("Methods", fontsize=16)

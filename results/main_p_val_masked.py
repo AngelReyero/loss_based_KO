@@ -135,21 +135,40 @@ for setting in settings:
             if metric == 'power':
                 ax.clear()
                 
-                power_df = (
-                    df_plot
-                    .groupby('method')['power']
-                    .mean()
-                    .reset_index()
-                )
-                
+
+                power_stats = df_plot.groupby('method')['power'].agg(
+                    mean_power='mean',
+                    sem_power=lambda x: np.std(x, ddof=1)/np.sqrt(len(x))
+                ).reset_index()
+
+                # Horizontal barplot
                 sns.barplot(
-                    data=power_df,
+                    data=power_stats,
                     y='method',
-                    x='power',
+                    x='mean_power',
                     order=methods_to_keep,
                     palette=palette,
-                    ax=ax
+                    ax=ax,
+                    ci=None
                 )
+
+                # Get the positions of each bar (seaborn returns a list of Rectangle objects)
+                bars = ax.patches
+                for bar, sem in zip(bars, power_stats['sem_power']):
+                    # y-center of the bar
+                    y = bar.get_y() + bar.get_height() / 2
+                    # x-center is bar.get_width() → length of the bar
+                    ax.errorbar(
+                        x=bar.get_width(),
+                        y=y,
+                        xerr=[[min(sem, bar.get_width())], [sem]],
+                        fmt='none',
+                        ecolor='black',
+                        capsize=5,
+                        lw=1.5
+                    )
+
+
                 
                 ax.set_xlabel("Power", fontsize=18)
                 ax.set_ylabel("")

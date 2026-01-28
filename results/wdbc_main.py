@@ -56,7 +56,7 @@ models = ['RF','NN', 'GB']#,'SL']
 plt.figure()
 sns.set(rc={'figure.figsize':(4,4)})
 sns.set_style("white")
-fig, axes = plt.subplots(1, 3, figsize=(13.5, 7.5))
+fig, axes = plt.subplots(1, 3, figsize=(13.5*0.85, 7.5*0.85))
 for ax, model in zip(axes, models):
     csv_files = glob.glob(f"res_csv/real_data/p_values_{setting}_{model}_seed*.csv")
     df = pd.concat((pd.read_csv(f) for f in csv_files), ignore_index=True)
@@ -178,9 +178,11 @@ for ax, model in zip(axes, models):
     # annotate on the right side of plot
     x_max = df_c['power'].max() if len(df_c)>0 else 0
     if model == 'NN':
-        shift = 4
-    else:
-        shift = 2.5
+        shift = 4.35
+    elif model == 'RF':
+        shift = 1.75
+    elif model == 'GB':
+        shift = 2.85
     for _, row in df_ann.iterrows():
         ax.text(
             x=x_max - shift,              # a bit to the right of max power
@@ -235,7 +237,7 @@ for ax, model in zip(axes, models):
     fig.legend(
         handles=handles,
         loc='lower center',
-        bbox_to_anchor=(0.5, 0.05),  # inside the space we reserved with bottom=0.20
+        bbox_to_anchor=(0.5, 0.01),  # inside the space we reserved with bottom=0.20
         ncol=5,
         title="Methods",
         fontsize=12,
